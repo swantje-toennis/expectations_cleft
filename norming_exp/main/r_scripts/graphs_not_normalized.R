@@ -1,0 +1,188 @@
+library(readxl)
+library(readr)
+library(ggplot2)
+library(ggpubr)
+library(plyr)
+library(dplyr)
+library(ez)
+library(lme4)
+library(languageR)
+library(car)
+library(MASS)
+library(fitdistrplus)
+library(ordinal)
+library(nlme)
+library(logspline)
+library(gplots)
+library(stringr)
+library(tidyr)
+library(broom)
+library(tidyselect)
+library(tidyverse)
+library(psy811)
+library(mixedup)
+
+
+#### ADJUST PATH ####
+########################################################
+setwd("C:/Arbeit/Expectedness/experiments/pretest/main/results/preprocessed_data")
+
+source("C:/Arbeit/R statistics/mer-utils.r")
+source("C:/Arbeit/R statistics/regression-utils.r")
+source("C:/Arbeit/R statistics/diagnostic_fcns.r")
+source("C:/Arbeit/R statistics/boot_glmm.r")
+source("C:/Arbeit/R statistics/helpers.r")
+
+#### ADJUST PATH ####
+#### read preprocessed data ###########
+data <- read.csv("C:/Arbeit/Expectedness/experiments/pretest/main/results/preprocessed_data/data.csv", sep = ";")
+
+##### Judith #####
+nrow(data)
+#View(data_t)
+length(unique(data$id))
+
+data$expec<-as.numeric(data$expec)
+data$cond_c<-as.factor(data$cond_c)
+data$cond_q<-as.factor(data$cond_q)
+data$list <- as.factor(data$list)
+data$target_no <- as.factor(data$target_no)
+str(data$target_no)
+str(data$cond_c)
+ table(data$cond_c)
+
+data = data %>%
+  mutate(cond_c=recode(cond_c, c1 = "0", c3 = "2")) %>%
+  mutate(target_no=recode(target_no, t1="1",t2="2",t3="3",
+                          t4="4",t5="5",t6="6",t7="7",
+                          t8="8",t9="9",t10="10",
+                          t11="11",t12="12",t13="13",t14="14",t15="15",t16="16"))
+
+str(data$target_no)
+####Calculate means for normalized data
+theme_set(theme_bw())
+
+levels(data$cond_c)
+data$cond_c <- relevel(data$cond_c, ref = "2")
+table(data$cond_q)
+
+data <- data %>%
+  filter(cond_q == "pq1") %>%
+  droplevels()
+
+str(data$exp)
+
+####Calculate means for normalized data
+means1 <- data %>% 
+  group_by(target_no,cond_c, cond_q) %>% 
+  summarize(Mean=mean(expec),CILow=ci.low(expec),CIHigh=ci.high(expec)) %>%
+  ungroup() %>%
+  mutate(YMin=Mean-CILow,YMax=Mean+CIHigh)
+means1
+
+high = means1 %>%
+  filter(cond_c == "2") %>%
+  mutate(target_no = fct_reorder(target_no,Mean))
+
+means1 = means1 %>%
+  mutate(target_no = fct_relevel(target_no,levels(high$target_no))) %>% 
+  mutate(cond_c = fct_relevel(cond_c,"0"))
+means1
+
+subjmeans = data %>%
+  group_by(id,target_no,cond_c) %>%
+  summarize(Mean = mean(expec)) %>%
+  ungroup() %>% 
+  mutate(cond_c = fct_relevel(as.factor(as.character(cond_c)),"0"))
+subjmeans$target_no <- factor(subjmeans$target_no, levels = unique(levels(means1$target_no)))
+
+levels(means1$cond_c)
+levels(subjmeans$cond_c)
+
+ggplot(means1, aes(x=target_no, y=Mean, color=cond_c, shape=cond_c, fill=cond_c)) +
+  geom_point(stroke=.5,size=3,color="black") +
+  geom_point(data=subjmeans,aes(fill=cond_c,color=cond_c),shape=21,alpha=.1) +
+  scale_shape_manual(values=c(21, 24),labels=c("0","2"),name="Distance to PQ-raising sentence",guide = guide_legend(reverse = TRUE) ) +
+  scale_fill_manual(values=c("#56B4E9","#E69F00"),labels=c("0","2"),name="Distance to PQ-raising sentence",guide = guide_legend(reverse = TRUE) ) +
+  geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.15) +
+  theme(legend.position = "top", legend.text=element_text(size=12)) +
+  labs(x='Item', y='Mean expectedness of PQ') +
+  coord_flip() +
+  scale_y_continuous(limits = c(0,100),breaks = c(0,25,50,75,100), 
+                     labels= c("0","25","50","75","100")) +
+  scale_color_manual(name="Fact", breaks=c("xx","yy"), labels=c("xx","yy"),  values=c("#56B4E9","#E69F00")) 
+ggsave("exp1.1.pdf",height=3,width=5) 
+
+#### end Judith #####
+
+
+########################################################
+#          Plots for non-normalized data
+########################################################
+
+
+###### means for all questions ##############
+means <-  data %>%
+  group_by(target_no,cond_c, cond_q) %>% 
+  summarize(Mean=mean(expec),CILow=ci.low(expec),CIHigh=ci.high(expec))%>%
+  ungroup() %>%
+  mutate(YMin=Mean-CILow,YMax=Mean+CIHigh)
+
+#### Means just for pq1 and pq3 ######
+means_pq1_pq3 <-  data[(data$cond_q=="pq1" | data$cond_q=="pq3"),] %>%
+  group_by(target_no,cond_c, cond_q) %>% 
+  summarize(Mean=mean(expec),CILow=ci.low(expec),CIHigh=ci.high(expec))%>%
+  ungroup() %>%
+  mutate(YMin=Mean-CILow,YMax=Mean+CIHigh)
+
+##### Plot comparing means for all questions per item ######
+ggplot(means, aes(x=cond_c, y=Mean, color=cond_q, shape=cond_q, fill=cond_q)) +
+  geom_point(stroke=.5,size=3,color="black") +
+  scale_shape_manual(values=c(21, 21, 21, 21, 21))+
+  geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.15) +
+  theme(legend.position = "top", legend.text=element_text(size=12)) +
+  ylab("Expectedness mean") +
+  xlab("Context condititon") +
+  facet_wrap(~target_no, nrow=2)
+
+
+##### Plot comparing means of pq1 and pq3 per item ######
+ggplot(means_pq1_pq3, aes(x=cond_c, y=Mean, color=cond_q, shape=cond_q, fill=cond_q)) +
+  geom_point(stroke=.5,size=3,color="black") +
+  scale_shape_manual(values=c(21, 21))+
+  geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.15) +
+  theme(legend.position = "top", legend.text=element_text(size=12)) +
+  ylab("Expectedness mean") +
+  xlab("Context condititon") +
+  facet_wrap(~target_no, nrow=2)
+
+
+##### Plots for irrelevant control #############
+data_irr <- subset(data, cond_q=="irr")
+#Boxplot
+data_irr %>% ggplot(aes(x = cond_c, y = expec, fill = cond_c)) +
+  geom_boxplot() + theme_minimal() + labs(title = "Boxplot for irrelevant question") + xlab("Number of context sentences") + ylab("Expectedness")  + guides(fill = guide_legend(title = "Context")) +
+  scale_fill_brewer(palette = 'PuOr')
+
+
+##### Plots for then-question ##########
+#Boxplot
+data_then <- subset(data, cond_q=="then")
+data_then %>% ggplot(aes(x = cond_c, y = expec, fill = cond_c)) +
+  geom_boxplot() + theme_minimal() + labs(title = "Boxplot for then-question") + xlab("Number of context sentences") + ylab("Expectedness")  + guides(fill = guide_legend(title = "Context")) +
+  scale_fill_brewer(palette = 'PuOr')
+
+
+##### Take out all questions except pq1 ##########
+data_pq1 <- subset(data, cond_q=="pq1")
+str(data_pq1)
+
+##### show the mean and standard deviation for the two conditions ##########
+data_pq1 %>% group_by(cond_c) %>%
+  summarize(M = mean(expec), SD = sd(expec))
+
+##### plot means and sd for pq1 ############
+#Boxplot
+data_pq1 %>% ggplot(aes(x = cond_c, y = expec, fill = cond_c)) +
+  geom_boxplot() + theme_minimal() + labs(title = "Boxplot") + xlab("Number of context sentences") + ylab("Expectedness")  + guides(fill = guide_legend(title = "Context")) +
+  scale_fill_brewer(palette = 'PuOr')

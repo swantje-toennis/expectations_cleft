@@ -1,0 +1,7 @@
+﻿<id:prolificID>Ihre Prolific ID:</id>
+<id:age>Alter:</id>
+<id:sex>Geschlecht:</id>
+<id:edu>Ihr höchster Bildungsabschluss:</id>
+<id:natLang>Muttersprache(n) (Die Sprache(n), die Sie als Baby gelernt haben.):</id>
+<id:hometown>Wo sind Sie aufgewachsen? (Bitte antworten Sie so genau wie möglich.)</id>
+<id:forLang>Sprechen Sie weitere Sprachen? Auf welchem Niveau? </id>

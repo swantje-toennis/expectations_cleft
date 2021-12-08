@@ -1,0 +1,188 @@
+<block>
+<random>
+
+<block>
+<block>
+<id:c3-t11>Als Irmgard in den Küchenschrank schaute, war das Kaffeepulver leer. Eine Nachfüllpackung war auch nirgends zu finden. Schließlich entschied sie sich einen Tee zu trinken.
+</id>
+</block> 
+<block>
+<id:canonical>Heike hat das Kaffeepulver aufgebraucht.</id>
+<id:cleft>Es war Heike, die das Kaffeepulver aufgebraucht hat.</id>
+</block>
+</block>
+
+<block>
+<block>
+<id:c3-t16>Als Benni die Playstation anstellte, waren die Einstellungen durcheinander. Er konnte sich an die vorherigen Einstellungen nicht mehr erinnern. Also spielte er ein Spiel auf seinem Handy.
+</id>
+</block> 
+<block>
+<id:canonical>Lilly hat zuletzt an der Playstation gespielt.</id>
+<id:cleft>Es war Lilly, die zuletzt an der Playstation gespielt hat.</id>
+</block>
+</block>
+
+<block>
+<block>
+<id:c1-t9>Als Wilhelm im Wohnzimmer lesen wollte, dröhnte das Radio in voller Lautstärke.
+</id>
+</block> 
+<block>
+<id:canonical>Benni hat es aufgedreht.</id>
+<id:cleft>Es war Benni, der es aufgedreht hat.</id>
+</block>
+</block>
+
+<block>
+<block>
+<id:c1-t6>Als Heike in den Hinterhof des Hauses fuhr, war ihr Parkplatz belegt.
+</id>
+</block> 
+<block>
+<id:canonical>Martin hat auf ihrem Platz geparkt.</id>
+<id:cleft>Es war Martin, der auf ihrem Platz geparkt hat.</id>
+</block>
+</block>
+
+<block>
+<block>
+<id:control-1>Bevor Irmgard ihren Nachmittagsspaziergang machte, aß sie ein Stück Kuchen vom Konditor.	Dazu trank sie eine heiße Schokolade. Schließlich machte sie sich auf zum Park um die Ecke.
+</id>
+</block> 
+<block>
+<id:pro>Er hatte gut geschmeckt.</id>
+<id:definite>Der Kuchen hatte gut geschmeckt.</id>
+</block>
+</block>
+
+<block>
+<block>
+<id:control-2>Heike kam in ihr Arbeitszimmer und hat den Computer hochgefahren. Dann hat sie eine Mail an eine Freundin geschrieben. Sie hat eine halbe Stunde dafür gebraucht.
+</id>
+</block> 
+<block>
+<id:pro>Er war sehr langsam.</id>
+<id:definite>Der Computer war sehr langsam.</id>
+</block>
+</block>
+
+<block>
+<block>
+<id:control-3>Lilly hat in ihrem Lieblingsbuch gelesen.
+</id>
+</block> 
+<block>
+<id:definite>Ihr Lieblingsbuch war von J. K. Rowling.</id>
+<id:pro>Es war von J. K. Rowling.</id>
+</block>
+</block>
+
+<block>
+<block>
+<id:control-4>Martin hat eine befreundete Arbeitskollegin nach Hause eingeladen.
+</id>
+</block> 
+<block>
+<id:definite>Die befreundete Arbeitskollegin hat eine Flasche Rotwein mitgebracht.</id>
+<id:pro>Sie hat eine Flasche Rotwein mitgebracht.</id>
+</block>
+</block>
+
+<block>
+<block>
+<id:f-1>Wilhelm setzte sich im Wohnzimmer in den Ohrensessel. Er wollte mit seinem neuen Strickprojekt beginnen.
+</id>
+</block> 
+<block>
+<random>
+<id:front>Einen roten Pullover wollte er stricken.</id>
+<id:unfront>Er wollte einen roten Pullover stricken.</id>
+</block>
+</block>
+
+<block>
+<block>
+<id:f-2>Wilhelm suchte sein Portemonnaie. Er wollte etwas einkaufen gehen. 
+</id>
+</block> 
+<block>
+<random>
+<id:front>Eine neue Stehlampe wollte er kaufen.</id>
+<id:unfront>Er wollte eine neue Stehlampe kaufen.</id>
+</block>
+</block>
+
+<block>
+<block>
+<id:f-3>Benni ist ins Kinderzimmer gegangen, weil ihm langweilig war. Er hat nach seinem Lieblingsspiel gesucht. 
+</id>
+</block> 
+<block>
+<random>
+<id:front>Monopoly spielt er am liebsten.</id>
+<id:unfront>Am liebsten spielt er Monopoly.</id>
+</block>
+</block>
+
+<block>
+<block>
+<id:f-4>Lilly hatte letzte Woche Geburtstag. Sie hatte einen großen Wunsch. 
+</id>
+</block> 
+<block>
+<random>
+<id:front>Eine Katze wollte sie haben.</id>
+<id:unfront>Sie wollte eine Katze haben.</id>
+</block>
+</block>
+
+<block>
+<block>
+<id:f-5>Martin kam in die Küche, um Abendessen zu kochen. Er wollte Spaghetti Bolognese zubereiten. Das mochte Lilly so gerne. 
+</id>
+</block> 
+<block>
+<random>
+<id:no_dm>Sie wollte es später nicht essen.</id>
+<id:dm>Trotzdem wollte sie es später nicht essen.</id>
+</block>
+</block>
+				
+<block>
+<block>
+<id:f-6>Heike hat noch nie gerne ihr Auto geputzt.
+</id>
+</block> 
+<block>
+<random>
+<id:no_dm>Heute hat Benni es geputzt.</id>
+<id:dm>Also hat Benni es heute geputzt.</id>
+</block>
+</block>
+
+<block>
+<block>
+<id:f-7>Benni war noch nicht von der Schule wiedergekommen. Normalerweise wäre er jetzt schon da.
+</id>
+</block> 
+<block>
+<random>
+<id:no_dm>Wilhelm hat die Nummer der Schule rausgesucht.</id>
+<id:dm>Also hat Wilhelm die Nummer der Schule rausgesucht.</id>
+</block>
+</block>
+	
+<block>
+<block>
+<id:f-8>Irmgard kam in den Keller und ihr schaute eine Maus entgegen. Sie konnte Mäuse nicht besonders gut leiden.
+</id>
+</block> 
+<block>
+<random>
+<id:no_dm>Sie holte die Kartoffeln aus dem Regal hinten in der Ecke.</id>
+<id:dm>Dennoch holte sie die Kartoffeln aus dem Regal hinten in der Ecke.</id>
+</block>
+</block>
+
+</block>
