@@ -1,3 +1,10 @@
+# set working directory to directory of script
+this.dir <- dirname(rstudioapi::getSourceEditorContext()$path)
+setwd(this.dir)
+
+source('helpers.R')
+
+# load required packages
 library(readxl)
 library(readr)
 library(ggplot2)
@@ -19,14 +26,19 @@ library(tidyr)
 library(tidyverse)
 library(tidyselect)
 
+theme_set(theme_bw())
+
+# load raw data
+
 ########################################################
-setwd("C:/Arbeit/Expectedness/experiments/pretest/main/results/raw_data")
+# setwd("C:/Arbeit/Expectedness/experiments/pretest/main/results/raw_data")
 
 ### Dataset #######   ---- ADJUST PATH!!!!----------
 #liste 1
-file1 <- "C:/Arbeit/Expectedness/experiments/pretest/main/results/raw_data/liste 1_results.csv"
-liste1 <- read.csv(file1, sep = ";")
-list1 <- c(1)
+# file1 <- "C:/Arbeit/Expectedness/experiments/pretest/main/results/raw_data/liste 1_results.csv"
+list1 = read.csv("../results/raw_data/liste 1_results.csv")
+#liste1 <- read.csv(file1, sep = ";")
+#list1 <- c(1)
 liste1$list <- list1
 #spalten umbenennen
 names(liste1) <- c("x1","id","x2","x3","x4","x5","x6","cond1","cond2","x7","cond_q","x8","expec","x9","q2","x10","exp2","x11","q3","x12","exp3","x13","q4","x14","exp4","x15","q5","x16","exp5","x17","x18", "list" )
@@ -41,7 +53,7 @@ names(liste2) <- c("x1","id","x2","x3","x4","x5","x6","cond1","cond2","x7","cond
 results_all <- rbind(liste1,liste2)
 summary(results_all)
 
-#unnötige Spalten raus
+#unn?tige Spalten raus
 results <- subset(results_all, select = c("id","cond1","cond2","cond_q","expec","q2","exp2","q3","exp3","q4","exp4","q5","exp5","list"))
 
 #Personendaten abspeichern (Wie speichert man das?)
@@ -49,13 +61,13 @@ personendaten<-results[(results$cond1=="feedback" | results$cond1=="<id:prolific
 write.table(personendaten, file="C:/Arbeit/Expectedness/experiments/pretest/main/results/preprocessed_data/personendaten.csv", row.names = FALSE, col.names = TRUE, sep = ";")
 
 
-#Unnötige Zeilen von Onexp rauswerfen
+#Unn?tige Zeilen von Onexp rauswerfen
 res2a<-results[!(results$cond1=="submit" | results$cond1=="expectedness1" | results$cond1=="feedback" | results$cond1=="<id:prolificID>"),]
 
-#column cond2 rauswerfen, weil unnötig
+#column cond2 rauswerfen, weil unn?tig
 res2 <- subset(res2a, select = -c(cond2))
 
-#unnötige Zeichen raus
+#unn?tige Zeichen raus
 res3 <- res2 %>%
   mutate_at("cond1", str_replace, "<id:", "")
 res3 <- res3 %>%
