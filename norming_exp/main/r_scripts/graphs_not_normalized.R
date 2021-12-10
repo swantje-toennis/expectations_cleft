@@ -1,47 +1,23 @@
-library(readxl)
-library(readr)
-library(ggplot2)
-library(ggpubr)
-library(plyr)
-library(dplyr)
-library(ez)
-library(lme4)
-library(languageR)
-library(car)
-library(MASS)
-library(fitdistrplus)
-library(ordinal)
-library(nlme)
-library(logspline)
-library(gplots)
-library(stringr)
-library(tidyr)
-library(broom)
-library(tidyselect)
+# set working directory to directory of script
+this.dir <- dirname(rstudioapi::getSourceEditorContext()$path)
+setwd(this.dir)
+
+source('helpers.R')
+
+# load required packages
 library(tidyverse)
-library(psy811)
-library(mixedup)
 
+# set theme for figures
+theme_set(theme_bw())
 
-#### ADJUST PATH ####
-########################################################
-setwd("C:/Arbeit/Expectedness/experiments/pretest/main/results/preprocessed_data")
+# load data
+data <- read.csv("../results/preprocessed_data/data.csv", sep = ";")
+nrow(data) #6240
 
-source("C:/Arbeit/R statistics/mer-utils.r")
-source("C:/Arbeit/R statistics/regression-utils.r")
-source("C:/Arbeit/R statistics/diagnostic_fcns.r")
-source("C:/Arbeit/R statistics/boot_glmm.r")
-source("C:/Arbeit/R statistics/helpers.r")
-
-#### ADJUST PATH ####
-#### read preprocessed data ###########
-data <- read.csv("C:/Arbeit/Expectedness/experiments/pretest/main/results/preprocessed_data/data.csv", sep = ";")
-
-##### Judith #####
-nrow(data)
 #View(data_t)
-length(unique(data$id))
+length(unique(data$id)) #78 participants
 
+# adjust columns
 data$expec<-as.numeric(data$expec)
 data$cond_c<-as.factor(data$cond_c)
 data$cond_q<-as.factor(data$cond_q)
@@ -52,34 +28,38 @@ str(data$cond_c)
  table(data$cond_c)
 
 data = data %>%
-  mutate(cond_c=recode(cond_c, c1 = "0", c3 = "2")) %>%
-  mutate(target_no=recode(target_no, t1="1",t2="2",t3="3",
-                          t4="4",t5="5",t6="6",t7="7",
-                          t8="8",t9="9",t10="10",
-                          t11="11",t12="12",t13="13",t14="14",t15="15",t16="16"))
-
+   mutate(cond_c=recode(cond_c, c1 = "0", c3 = "2")) %>%
+   mutate(target_no=recode(target_no, t1="1",t2="2",t3="3",
+                           t4="4",t5="5",t6="6",t7="7",
+                           t8="8",t9="9",t10="10",
+                           t11="11",t12="12",t13="13",t14="14",t15="15",t16="16"))
 str(data$target_no)
-####Calculate means for normalized data
-theme_set(theme_bw())
-
+ 
+ 
 levels(data$cond_c)
 data$cond_c <- relevel(data$cond_c, ref = "2")
 table(data$cond_q)
+ 
+ # plot in SALT abstract ---- 
+ # plot mean for PQ1 in the two conditions by item
+ 
 
-data <- data %>%
+# restrict data to only pq1
+data_pq1 <- data %>%
   filter(cond_q == "pq1") %>%
   droplevels()
 
-str(data$exp)
+str(data_pq1$exp)
 
-####Calculate means for normalized data
-means1 <- data %>% 
+# calculate mean for pq1 by condition
+means1 <- data_pq1 %>% 
   group_by(target_no,cond_c, cond_q) %>% 
   summarize(Mean=mean(expec),CILow=ci.low(expec),CIHigh=ci.high(expec)) %>%
   ungroup() %>%
   mutate(YMin=Mean-CILow,YMax=Mean+CIHigh)
 means1
 
+# sort items by mean for pq1 in condition 2
 high = means1 %>%
   filter(cond_c == "2") %>%
   mutate(target_no = fct_reorder(target_no,Mean))
@@ -89,7 +69,8 @@ means1 = means1 %>%
   mutate(cond_c = fct_relevel(cond_c,"0"))
 means1
 
-subjmeans = data %>%
+# calculate participants' mean responses
+subjmeans = data_pq1 %>%
   group_by(id,target_no,cond_c) %>%
   summarize(Mean = mean(expec)) %>%
   ungroup() %>% 
@@ -99,9 +80,10 @@ subjmeans$target_no <- factor(subjmeans$target_no, levels = unique(levels(means1
 levels(means1$cond_c)
 levels(subjmeans$cond_c)
 
+# plot
 ggplot(means1, aes(x=target_no, y=Mean, color=cond_c, shape=cond_c, fill=cond_c)) +
   geom_point(stroke=.5,size=3,color="black") +
-  geom_point(data=subjmeans,aes(fill=cond_c,color=cond_c),shape=21,alpha=.1) +
+  geom_point(data_pq1=subjmeans,aes(fill=cond_c,color=cond_c),shape=21,alpha=.1) +
   scale_shape_manual(values=c(21, 24),labels=c("0","2"),name="Distance to PQ-raising sentence",guide = guide_legend(reverse = TRUE) ) +
   scale_fill_manual(values=c("#56B4E9","#E69F00"),labels=c("0","2"),name="Distance to PQ-raising sentence",guide = guide_legend(reverse = TRUE) ) +
   geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.15) +
@@ -112,6 +94,58 @@ ggplot(means1, aes(x=target_no, y=Mean, color=cond_c, shape=cond_c, fill=cond_c)
                      labels= c("0","25","50","75","100")) +
   scale_color_manual(name="Fact", breaks=c("xx","yy"), labels=c("xx","yy"),  values=c("#56B4E9","#E69F00")) 
 ggsave("exp1.1.pdf",height=3,width=5) 
+
+# plot in ELM2 abstract ---- 
+# plot mean for all five questions in the two conditions
+
+data = data %>%
+  mutate(cond_c=recode(cond_c, `0` = "1", `2` = "3")) %>%
+  mutate(cond_q=recode(cond_q, irr = "Q-", then = "Q+", pq1 = "Q1", pq2 = "Q2", pq3 = "Q3"))
+
+table(data$cond_q)
+levels(data$cond_c)
+data$cond_c <- relevel(data$cond_c, ref = "1")
+table(data$cond_q)
+
+
+# calculate mean for pq1 by condition
+means1 <- data %>% 
+  group_by(cond_c, cond_q) %>% 
+  summarize(Mean=mean(expec),CILow=ci.low(expec),CIHigh=ci.high(expec)) %>%
+  ungroup() %>%
+  mutate(YMin=Mean-CILow,YMax=Mean+CIHigh)
+means1
+
+# calculate item mean responses
+# itemmeans = data %>%
+#   group_by(target_no,cond_c,cond_q) %>%
+#   summarize(Mean = mean(expec)) %>%
+#   ungroup() %>% 
+#   mutate(cond_c = fct_relevel(as.factor(as.character(cond_c)),"1"))
+
+# make sure that levels are the same
+#levels(means1$cond_c)
+#levels(itemmeans$cond_c)
+
+# color-blind-friendly palette
+cbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7") # c("#999999",
+
+# plot
+ggplot(means1, aes(x=cond_c, y=Mean, color=cond_q, shape=cond_q, fill=cond_q)) +
+  #geom_point(stroke=.5,size=3,color="black") +
+  geom_text(aes(label=cond_q)) +
+  theme(legend.position="none") +
+  #geom_point(data=itemmeans,aes(fill=cond_q,color=cond_q),shape=21,alpha=.1) +
+  #scale_shape_manual(values=c(21, 24),labels=c("0","2"),name="Distance to PQ-raising sentence",guide = guide_legend(reverse = TRUE) ) +
+  #scale_fill_manual(values=c("#56B4E9","#E69F00"),labels=c("0","2"),name="Distance to PQ-raising sentence",guide = guide_legend(reverse = TRUE) ) +
+  #geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.15) +
+  #theme(legend.position = "top", legend.text=element_text(size=12)) +
+  labs(x='Number of context sentences', y='Mean expectedness') +
+  scale_y_continuous(limits = c(0,100),breaks = c(0,25,50,75,100), 
+                     labels= c("0","25","50","75","100")) +
+  scale_color_manual(values=cbPalette) 
+  scale_color_manual(values=c("#56B4E9","#56B4E9","#56B4E9","#56B4E9","#E69F00")) 
+ggsave("../results/graphs/exp1.2.pdf",height=3,width=3) 
 
 #### end Judith #####
 
