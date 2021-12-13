@@ -11,7 +11,7 @@ library(tidyverse)
 theme_set(theme_bw())
 
 # load data
-data <- read.csv("../results/preprocessed_data/data.csv", sep = ";")
+data <- read.csv("../data/preprocessed_data/data.csv", sep = ";")
 nrow(data) #6240
 
 #View(data_t)
@@ -128,24 +128,31 @@ means1
 #levels(itemmeans$cond_c)
 
 # color-blind-friendly palette
-cbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7") # c("#999999",
+cbPalette <- c("#56B4E9","red","#56B4E9","#56B4E9","#56B4E9")
+#"#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7","darkgrey") # c("#999999",
 
+# set alpha
+alpha <- ifelse(means1$cond_q == "Q1", 1, 1)
+
+# set size
+size <- ifelse(means1$cond_q == "Q1", 6, 5)
+
+levels(means1$cond_q)
 # plot
-ggplot(means1, aes(x=cond_c, y=Mean, color=cond_q, shape=cond_q, fill=cond_q)) +
+ggplot(means1, aes(x=cond_c, y=Mean,color=cond_q,fill=cond_q)) +
   #geom_point(stroke=.5,size=3,color="black") +
-  geom_text(aes(label=cond_q)) +
+  geom_text(aes(label=cond_q,alpha = alpha),size=size) +
   theme(legend.position="none") +
-  #geom_point(data=itemmeans,aes(fill=cond_q,color=cond_q),shape=21,alpha=.1) +
-  #scale_shape_manual(values=c(21, 24),labels=c("0","2"),name="Distance to PQ-raising sentence",guide = guide_legend(reverse = TRUE) ) +
+  scale_shape_manual(values=c(21)) +
   #scale_fill_manual(values=c("#56B4E9","#E69F00"),labels=c("0","2"),name="Distance to PQ-raising sentence",guide = guide_legend(reverse = TRUE) ) +
   #geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.15) +
   #theme(legend.position = "top", legend.text=element_text(size=12)) +
   labs(x='Number of context sentences', y='Mean expectedness') +
   scale_y_continuous(limits = c(0,100),breaks = c(0,25,50,75,100), 
                      labels= c("0","25","50","75","100")) +
-  scale_color_manual(values=cbPalette) 
-  scale_color_manual(values=c("#56B4E9","#56B4E9","#56B4E9","#56B4E9","#E69F00")) 
-ggsave("../results/graphs/exp1.2.pdf",height=3,width=3) 
+  scale_color_manual(values=cbPalette) +
+  scale_fill_manual(values=cbPalette)
+ggsave("../graphs/exp1-elm.pdf",height=2.5,width=2.5) 
 
 #### end Judith #####
 
