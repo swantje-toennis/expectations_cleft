@@ -1,5 +1,0 @@
-<!--OnExpVariables:
-NumberOfParticipants=6;
-NumberOfMails=1;
-swantje.toennis@ling.uni-stuttgart.de;
--->
