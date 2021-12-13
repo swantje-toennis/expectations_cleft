@@ -34,24 +34,25 @@ theme_set(theme_bw())
 # setwd("C:/Arbeit/Expectedness/experiments/pretest/main/results/raw_data")
 
 ### Dataset #######
-#liste 1
+#The raw data contains a separate file for each list
+#load data of list 1
 # file1 <- "C:/Arbeit/Expectedness/experiments/pretest/main/results/raw_data/liste 1_results.csv"
-list1 = read.csv("../results/raw_data/liste 1_results.csv")
-#liste1 <- read.csv(file1, sep = ";")
+list1 <- read.csv("../results/raw_data/liste 1_results.csv")
+#list1 <- read.csv(file1, sep = ";")
 #list1 <- c(1)
-liste1$list <- list1
+list1$list <- list1
 #rename columns
-names(liste1) <- c("x1","id","x2","x3","x4","x5","x6","cond1","cond2","x7","cond_q","x8","expec","x9","q2","x10","exp2","x11","q3","x12","exp3","x13","q4","x14","exp4","x15","q5","x16","exp5","x17","x18", "list" )
-#liste 2
-file2 <- "C:/Arbeit/Expectedness/experiments/pretest/main/results/raw_data/liste 2_results.csv"
-liste2 <- read.csv(file2, sep = ";")
-list2 <- c(2)
-liste2$list <- list2
+names(list1) <- c("x1","id","x2","x3","x4","x5","x6","cond1","cond2","x7","cond_q","x8","expec","x9","q2","x10","exp2","x11","q3","x12","exp3","x13","q4","x14","exp4","x15","q5","x16","exp5","x17","x18", "list" )
+#load data of list 2
+list2 <- read.csv("../results/raw_data/liste 2_results.csv")
+#list2 <- read.csv(file2, sep = ";")
+#list2 <- c(2)
+list2$list <- list2
 #rename columns
-names(liste2) <- c("x1","id","x2","x3","x4","x5","x6","cond1","cond2","x7","cond_q","x8","expec","x9","q2","x10","exp2","x11","q3","x12","exp3","x13","q4","x14","exp4","x15","q5","x16","exp5","x17","x18", "list" )
+names(list2) <- c("x1","id","x2","x3","x4","x5","x6","cond1","cond2","x7","cond_q","x8","expec","x9","q2","x10","exp2","x11","q3","x12","exp3","x13","q4","x14","exp4","x15","q5","x16","exp5","x17","x18", "list" )
 
 #Join data from list 1 and 2
-results_all <- rbind(liste1,liste2)
+results_all <- rbind(list1,list2)
 summary(results_all)
 
 #delete unnecessary columns
