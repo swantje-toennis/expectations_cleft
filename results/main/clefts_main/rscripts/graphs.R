@@ -1,42 +1,19 @@
-library(readxl)
-library(readr)
-library(ggplot2)
-library(ggpubr)
-library(plyr)
-library(dplyr)
-library(ez)
-library(lme4)
-library(languageR)
-library(car)
-library(MASS)
-library(fitdistrplus)
-library(ordinal)
-library(nlme)
-library(logspline)
-library(gplots)
-library(stringr)
-library(tidyr)
-library(broom)
-library(tidyselect)
+# set working directory to directory of script
+this.dir <- dirname(rstudioapi::getSourceEditorContext()$path)
+setwd(this.dir)
+
+source('helpers.R')
+
+# load required packages
 library(tidyverse)
-library(psy811)
-library(mixedup)
 
+# set theme for figures
+theme_set(theme_bw())
 
-
-########################################################
-####  ADJUST PATH!!!!   ###############
-setwd("C:/Arbeit/Expectedness/experiments/cleft_exp/main/results/preprocessed_data")
-
-source("C:/Arbeit/R statistics/mer-utils.r")
-source("C:/Arbeit/R statistics/regression-utils.r")
-source("C:/Arbeit/R statistics/diagnostic_fcns.r")
-source("C:/Arbeit/R statistics/boot_glmm.r")
-source("C:/Arbeit/R statistics/helpers.r")
-
-####  ADJUST PATH!!!!   ###############
-#### read preprocessed data ###########
-data_t <- read.csv("C:/Arbeit/Expectedness/experiments/cleft_exp/main/results/preprocessed_data/data_t.csv", sep = ";")
+# load data
+data <- read.csv("../data/data_t.csv", sep = ";")
+nrow(data) #372
+summary(data)
 
 #### Interpret judgment as numbers and context, tendency, condition A, condition B and list as a factors #####
 data_t$judgment<-as.numeric(data_t$judgment)
@@ -47,12 +24,13 @@ data_t$list <- as.factor(data_t$list)
 data_t$tendency <- as.factor(data_t$tendency)
 str(data_t)
 
-########################################################
-#                         Plots----
-########################################################
+data_t = data_t %>%
+  mutate(cond_c=recode(cond_c, lower = "1", higher = "3"))
 
-##### Plot means with 95% CIs ######
-#1. calculate means
+
+##### Plot means with 95% CIs
+
+# calculate means
 means <-  data_t %>%
   group_by(cond_c) %>% 
   summarize(Mean=mean(judgment),CILow=ci.low(judgment),CIHigh=ci.high(judgment))%>%
@@ -74,9 +52,9 @@ ggplot() +
   geom_dotplot(data = subjmeans, aes(x = cond_c, y = Mean), binaxis = "y", binwidth=8,
                stackdir = "center", dotsize = 0.3, shape=21,fill="gray70", alpha=.3, color="gray40") +
   scale_y_continuous(breaks = c(-100, -50, 0, 50, 100), labels = c("-100\ncanonical better", "-50", "0\nboth equally good", "50", "100\ncleft better")) +
-  labs(x='Expectedness of PQ', y='Kernel probability density of preference ratings') #+
- # coord_flip()
-ggsave("exp2.pdf",height=3,width=5)
+  labs(x='Number of context sentences', y='Kernel probability density of preference ratings') +
+  coord_flip()
+ggsave("../graphs/means-by-condition-elm.pdf",height=3,width=5)
 
 #2. plot means
 ggplot(means, aes(x=cond_c, y=Mean)) +
