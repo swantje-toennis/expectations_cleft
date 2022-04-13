@@ -11,9 +11,9 @@ library(tidyverse)
 theme_set(theme_bw())
 
 # load data
-data <- read.csv("../data/data_t.csv", sep = ";")
-nrow(data) #372
-summary(data)
+data_t <- read.csv("../data/data_t.csv", sep = ";")
+nrow(data_t) #372
+summary(data_t)
 
 #### Interpret judgment as numbers and context, tendency, condition A, condition B and list as a factors #####
 data_t$judgment<-as.numeric(data_t$judgment)
@@ -25,7 +25,7 @@ data_t$tendency <- as.factor(data_t$tendency)
 str(data_t)
 
 data_t = data_t %>%
-  mutate(cond_c=recode(cond_c, lower = "1", higher = "3"))
+  mutate(cond_c=recode(cond_c, c1 = "higher", c3 = "lower"))
 
 
 ##### Plot means with 95% CIs
@@ -44,6 +44,7 @@ subjmeans = data_t %>%
 levels(means$cond_c)
 levels(subjmeans$cond_c)
 
+# SALT violin plot
 ggplot() +
   geom_violin(data = data_t, aes(x = cond_c, y = judgment), alpha = .5) +
   geom_point(data = means, aes(x = cond_c, y = Mean), stroke=.5,size=3,color="black") +
@@ -52,9 +53,10 @@ ggplot() +
   geom_dotplot(data = subjmeans, aes(x = cond_c, y = Mean), binaxis = "y", binwidth=8,
                stackdir = "center", dotsize = 0.3, shape=21,fill="gray70", alpha=.3, color="gray40") +
   scale_y_continuous(breaks = c(-100, -50, 0, 50, 100), labels = c("-100\ncanonical better", "-50", "0\nboth equally good", "50", "100\ncleft better")) +
-  labs(x='Number of context sentences', y='Kernel probability density of preference ratings') +
+  scale_x_discrete(limits = rev(levels(data_t$cond_c)))+
+  labs(x='Expectedness of question', y='Kernel probability density of preference ratings') +
   coord_flip()
-ggsave("../graphs/means-by-condition-elm.pdf",height=3,width=5)
+ggsave("../graphs/means-by-condition-salt.pdf",height=3,width=6)
 
 #2. plot means
 ggplot(means, aes(x=cond_c, y=Mean)) +
