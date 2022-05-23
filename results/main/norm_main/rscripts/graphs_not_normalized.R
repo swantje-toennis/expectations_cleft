@@ -25,24 +25,36 @@ data$list <- as.factor(data$list)
 data$target_no <- as.factor(data$target_no)
 str(data$target_no)
 str(data$cond_c)
- table(data$cond_c)
+table(data$cond_c)
 
 data = data %>%
-   mutate(cond_c=recode(cond_c, c1 = "0", c3 = "2")) %>%
-   mutate(target_no=recode(target_no, t1="1",t2="2",t3="3",
-                           t4="4",t5="5",t6="6",t7="7",
-                           t8="8",t9="9",t10="10",
-                           t11="11",t12="12",t13="13",t14="14",t15="15",t16="16"))
+  mutate(cond_c=recode(cond_c, c1 = "1", c3 = "3")) %>%
+  mutate(target_no=recode(target_no, t1="Who ate the last roll?",
+                          t2="Who locked the door?",
+                          t3="Who took the lawn chair?",
+                          t4="Who was the last to shower?",
+                          t5="Who spilled ketchup?",
+                          t6="Who parked on Heike's spot?",
+                          t7="Who took the dice?",
+                          t8="Who parked in front of Benni's bicycle?",
+                          t9="Who turned up the radio?",
+                          t10="Who soiled Martin's shoes?",
+                          t11="Who used up the coffee powder?",
+                          t12="Who turned off the water?",
+                          t13="Who cut out the newspaper article?",
+                          t14="Who used up the gas?",
+                          t15="Who watered the flowers?",
+                          t16="Who last used the playstation?"))
 str(data$target_no)
- 
- 
+
+
 levels(data$cond_c)
-data$cond_c <- relevel(data$cond_c, ref = "2")
+data$cond_c <- relevel(data$cond_c, ref = "3")
 table(data$cond_q)
- 
- # plot in SALT abstract ---- 
- # plot mean for PQ1 in the two conditions by item
- 
+
+# plot in SALT abstract ---- 
+# plot mean for PQ1 in the two conditions by item
+
 
 # restrict data to only pq1
 data_pq1 <- data %>%
@@ -61,12 +73,12 @@ means1
 
 # sort items by mean for pq1 in condition 2
 high = means1 %>%
-  filter(cond_c == "2") %>%
+  filter(cond_c == "3") %>%
   mutate(target_no = fct_reorder(target_no,Mean))
 
 means1 = means1 %>%
   mutate(target_no = fct_relevel(target_no,levels(high$target_no))) %>% 
-  mutate(cond_c = fct_relevel(cond_c,"0"))
+  mutate(cond_c = fct_relevel(cond_c,"1"))
 means1
 
 # calculate participants' mean responses
@@ -83,16 +95,16 @@ levels(subjmeans$cond_c)
 # plot
 ggplot(means1, aes(x=target_no, y=Mean, color=cond_c, shape=cond_c, fill=cond_c)) +
   geom_point(stroke=.5,size=3,color="black") +
-  geom_point(data_pq1=subjmeans,aes(fill=cond_c,color=cond_c),shape=21,alpha=.1) +
-  scale_shape_manual(values=c(21, 24),labels=c("0","2"),name="Distance to PQ-raising sentence",guide = guide_legend(reverse = TRUE) ) +
-  scale_fill_manual(values=c("#56B4E9","#E69F00"),labels=c("0","2"),name="Distance to PQ-raising sentence",guide = guide_legend(reverse = TRUE) ) +
+  geom_point(data=subjmeans,aes(fill=cond_c,color=cond_c),shape=21,alpha=.1) +
+  scale_shape_manual(values=c(21, 24),labels=c("1","3"),name="Rating given after sentence",guide = guide_legend(reverse = TRUE) ) +
+  scale_fill_manual(values=c("#2596BE","#FF8000"),labels=c("1","3"),name="Rating given after sentence",guide = guide_legend(reverse = TRUE) ) +
   geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.15) +
   theme(legend.position = "top", legend.text=element_text(size=12)) +
-  labs(x='Item', y='Mean expectedness of PQ') +
+  labs(x='Item', y='Mean expectedness of Q1') +
   coord_flip() +
   scale_y_continuous(limits = c(0,100),breaks = c(0,25,50,75,100), 
                      labels= c("0","25","50","75","100")) +
-  scale_color_manual(name="Fact", breaks=c("xx","yy"), labels=c("xx","yy"),  values=c("#56B4E9","#E69F00")) 
+  scale_color_manual(name="Fact", breaks=c("xx","yy"), labels=c("xx","yy"),  values=c("#2596BE","#FF8000")) 
 ggsave("exp1-salt.pdf",height=3,width=5) 
 
 # plot in ELM2 abstract ---- 
