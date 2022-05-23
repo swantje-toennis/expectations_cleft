@@ -83,7 +83,7 @@ levels(subjmeans$cond_c)
 # plot
 ggplot(means1, aes(x=target_no, y=Mean, color=cond_c, shape=cond_c, fill=cond_c)) +
   geom_point(stroke=.5,size=3,color="black") +
-  geom_point(data_pq1=subjmeans,aes(fill=cond_c,color=cond_c),shape=21,alpha=.1) +
+  geom_point(data=subjmeans,aes(fill=cond_c,color=cond_c),shape=21,alpha=.1) +
   scale_shape_manual(values=c(21, 24),labels=c("0","2"),name="Distance to PQ-raising sentence",guide = guide_legend(reverse = TRUE) ) +
   scale_fill_manual(values=c("#56B4E9","#E69F00"),labels=c("0","2"),name="Distance to PQ-raising sentence",guide = guide_legend(reverse = TRUE) ) +
   geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.15) +
