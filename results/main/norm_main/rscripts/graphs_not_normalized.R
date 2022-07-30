@@ -28,7 +28,7 @@ str(data$cond_c)
 table(data$cond_c)
 
 data = data %>%
-  mutate(cond_c=recode(cond_c, c1 = "1", c3 = "3")) %>%
+  mutate(cond_c=recode(cond_c, c1 = "sentence 1", c3 = "sentence 3")) %>%
   mutate(target_no=recode(target_no, t1="Who ate the last roll?",
                           t2="Who locked the door?",
                           t3="Who took the lawn chair?",
@@ -49,7 +49,7 @@ str(data$target_no)
 
 
 levels(data$cond_c)
-data$cond_c <- relevel(data$cond_c, ref = "3")
+data$cond_c <- relevel(data$cond_c, ref = "sentence 3")
 table(data$cond_q)
 
 # plot in SALT abstract ---- 
@@ -73,12 +73,12 @@ means1
 
 # sort items by mean for pq1 in condition 2
 high = means1 %>%
-  filter(cond_c == "3") %>%
+  filter(cond_c == "sentence 3") %>%
   mutate(target_no = fct_reorder(target_no,Mean))
 
 means1 = means1 %>%
   mutate(target_no = fct_relevel(target_no,levels(high$target_no))) %>% 
-  mutate(cond_c = fct_relevel(cond_c,"1"))
+  mutate(cond_c = fct_relevel(cond_c,"sentence 1"))
 means1
 
 # calculate participants' mean responses
@@ -86,7 +86,7 @@ subjmeans = data_pq1 %>%
   group_by(id,target_no,cond_c) %>%
   summarize(Mean = mean(expec)) %>%
   ungroup() %>% 
-  mutate(cond_c = fct_relevel(as.factor(as.character(cond_c)),"0"))
+  mutate(cond_c = fct_relevel(as.factor(as.character(cond_c)),"sentence 1"))
 subjmeans$target_no <- factor(subjmeans$target_no, levels = unique(levels(means1$target_no)))
 
 levels(means1$cond_c)
@@ -96,16 +96,16 @@ levels(subjmeans$cond_c)
 ggplot(means1, aes(x=target_no, y=Mean, color=cond_c, shape=cond_c, fill=cond_c)) +
   geom_point(stroke=.5,size=3,color="black") +
   geom_point(data=subjmeans,aes(fill=cond_c,color=cond_c),shape=21,alpha=.1) +
-  scale_shape_manual(values=c(21, 24),labels=c("1","3"),name="Rating given after sentence",guide = guide_legend(reverse = TRUE) ) +
-  scale_fill_manual(values=c("#2596BE","#FF8000"),labels=c("1","3"),name="Rating given after sentence",guide = guide_legend(reverse = TRUE) ) +
+  scale_shape_manual(values=c(21, 24),labels=c("1 sentence","3 sentences"),name="Context condition",guide = guide_legend(reverse = TRUE) ) +
+  scale_fill_manual(values=c("#2596BE","#FF8C19"),labels=c("1 sentence","3 sentences"),name="Context condition",guide = guide_legend(reverse = TRUE) ) +
   geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.15) +
   theme(legend.position = "top", legend.text=element_text(size=12)) +
-  labs(x='Item', y='Mean expectedness of Q1') +
+  labs(x='Target question', y='Mean expectedness rating') +
   coord_flip() +
   scale_y_continuous(limits = c(0,100),breaks = c(0,25,50,75,100), 
                      labels= c("0","25","50","75","100")) +
-  scale_color_manual(name="Fact", breaks=c("xx","yy"), labels=c("xx","yy"),  values=c("#2596BE","#FF8000")) 
-ggsave("exp1-salt.pdf",height=3,width=5) 
+  scale_color_manual(name="Fact", breaks=c("xx","yy"), labels=c("xx","yy"),  values=c("#2596BE","#FF8C19")) 
+ggsave("exp1-salt.png",height=3,width=6.5) 
 
 # plot in ELM2 abstract ---- 
 # plot mean for all five questions in the two conditions
