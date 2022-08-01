@@ -1,234 +1,170 @@
-library(readxl)
-library(readr)
-library(ggplot2)
-library(ggpubr)
-library(plyr)
-library(dplyr)
-library(ez)
-library(lme4)
-library(languageR)
-library(car)
-library(MASS)
-library(fitdistrplus)
-library(ordinal)
-library(nlme)
-library(logspline)
-library(gplots)
-library(stringr)
-library(tidyr)
-library(broom)
-library(tidyselect)
+# set working directory to directory of script
+this.dir <- dirname(rstudioapi::getSourceEditorContext()$path)
+setwd(this.dir)
+
+source('helpers.R')
+
+# load required packages
 library(tidyverse)
-library(psy811)
-library(mixedup)
 
-#library(betareg)
-#library(emmeans)
-#library(lmtest)
-#library(multcompView)
-#library(psych)
-#library(rcompanion)
-#library(rstatix)
+# set theme for figures
+theme_set(theme_bw())
 
+# load data
+data <- read.csv("../data/preprocessed_data/data.csv", sep = ";")
+nrow(data) #6240
 
-#### ADJUST PATH #######
-########################################################
-setwd("C:/Arbeit/Expectedness/experiments/pretest/main/results/preprocessed_data")
-
-source("C:/Arbeit/R statistics/mer-utils.r")
-source("C:/Arbeit/R statistics/regression-utils.r")
-source("C:/Arbeit/R statistics/diagnostic_fcns.r")
-source("C:/Arbeit/R statistics/boot_glmm.r")
-source("C:/Arbeit/R statistics/helpers.r")
-
-#### ADJUST PATH #######
-#### read preprocessed data ###########
-data <- read.csv("C:/Arbeit/Expectedness/experiments/pretest/main/results/preprocessed_data/data.csv", sep = ";")
-
-### Judith's part ####
-nrow(data)
 #View(data_t)
-length(unique(data$id))
+length(unique(data$id)) #78 participants
 
+# adjust columns
 data$expec<-as.numeric(data$expec)
 data$cond_c<-as.factor(data$cond_c)
 data$cond_q<-as.factor(data$cond_q)
 data$list <- as.factor(data$list)
 data$target_no <- as.factor(data$target_no)
 str(data$target_no)
+str(data$cond_c)
+table(data$cond_c)
 
 data = data %>%
-  mutate(cond_c=recode(cond_c, c1 = "0", c3 = "2")) %>%
-  mutate(target_no=recode(target_no, t1="1",t2="2",t3="3",
-                          t4="4",t5="5",t6="6",t7="7",
-                          t8="8",t9="9",t10="10",
-                          t11="11",t12="12",t13="13",t14="14",t15="15",t16="16"))
-
+  mutate(cond_c=recode(cond_c, c1 = "1 sentence", c3 = "3 sentences")) %>%
+  mutate(target_no=recode(target_no, t1="Who ate the last roll?",
+                          t2="Who locked the door?",
+                          t3="Who took the lawn chair?",
+                          t4="Who was the last to shower?",
+                          t5="Who spilled ketchup?",
+                          t6="Who parked on Heike's spot?",
+                          t7="Who took the dice?",
+                          t8="Who parked in front of Benni's bicycle?",
+                          t9="Who turned up the radio?",
+                          t10="Who soiled Martin's shoes?",
+                          t11="Who used up the coffee powder?",
+                          t12="Who turned off the water?",
+                          t13="Who cut out the newspaper article?",
+                          t14="Who used up the gas?",
+                          t15="Who watered the flowers?",
+                          t16="Who last used the playstation?"))
 str(data$target_no)
 
-#### normalize data ###############
-zdata1 <- data %>% group_by(id,target_no,cond_c)%>%
-  summarize(id, target_no, cond_c, norm_exp = 100*expec/sum(expec), expec, cond_q, list)
-normalized_data <- zdata1 %>%
-  mutate_at("norm_exp", str_replace, "NaN", "0")
-normalized_data$norm_exp <- as.numeric(normalized_data$norm_exp)
-#str(normalized_data)
 
+levels(data$cond_c)
+data$cond_c <- relevel(data$cond_c, ref = "3 sentences")
+table(data$cond_q)
 
-########################################################
-#          Plots for normalized data
-########################################################
+# plot mean for target question in the two conditions by context item
 
-
-levels(normalized_data$cond_c)
-normalized_data$cond_c <- relevel(normalized_data$cond_c, ref = "2")
-table(normalized_data$cond_q)
-
-normalized_data <- normalized_data %>%
+# restrict data to only pq1
+data_pq1 <- data %>%
   filter(cond_q == "pq1") %>%
   droplevels()
 
-####Calculate means for normalized data
-means1 <- normalized_data %>% 
+str(data_pq1$exp)
+
+# calculate mean for pq1 by condition
+means1 <- data_pq1 %>% 
   group_by(target_no,cond_c, cond_q) %>% 
-  summarize(Mean=mean(norm_exp),CILow=ci.low(norm_exp),CIHigh=ci.high(norm_exp))%>%
+  summarize(Mean=mean(expec),CILow=ci.low(expec),CIHigh=ci.high(expec)) %>%
   ungroup() %>%
   mutate(YMin=Mean-CILow,YMax=Mean+CIHigh)
 means1
 
+# sort items by mean for pq1 in condition 2
 high = means1 %>%
-  filter(cond_c == "2") %>%
+  filter(cond_c == "3 sentences") %>%
   mutate(target_no = fct_reorder(target_no,Mean))
 
 means1 = means1 %>%
   mutate(target_no = fct_relevel(target_no,levels(high$target_no))) %>% 
-  mutate(cond_c = fct_relevel(cond_c,"0"))
+  mutate(cond_c = fct_relevel(cond_c,"1 sentence"))
 means1
 
-subjmeans = normalized_data %>%
+# calculate participants' mean responses
+subjmeans = data_pq1 %>%
   group_by(id,target_no,cond_c) %>%
-  summarize(Mean = mean(norm_exp)) %>%
+  summarize(Mean = mean(expec)) %>%
   ungroup() %>% 
-  mutate(cond_c = fct_relevel(as.factor(as.character(cond_c)),"0"))
+  mutate(cond_c = fct_relevel(as.factor(as.character(cond_c)),"1 sentence"))
 subjmeans$target_no <- factor(subjmeans$target_no, levels = unique(levels(means1$target_no)))
 
-#### Calculate means just for pq1 and pq3 grouped by item ######
-# means1_pq1_pq3 <-  normalized_data[(normalized_data$cond_q=="pq1" | normalized_data$cond_q=="pq3"),] %>%
-#   group_by(target_no,cond_c, cond_q) %>% 
-#   summarize(Mean=mean(norm_exp),CILow=ci.low(norm_exp),CIHigh=ci.high(norm_exp))%>%
-#   ungroup() %>%
-#   mutate(YMin=Mean-CILow,YMax=Mean+CIHigh)
-
-# ##### Plot comparing means of pq1 and pq3 per item ######
-# ggplot(means1_pq1_pq3, aes(x=cond_c, y=Mean, color=cond_q, shape=cond_q, fill=cond_q)) +
-#   geom_point(stroke=.5,size=3,color="black") +
-#   scale_shape_manual(values=c(21, 21))+
-#   scale_fill_manual(values=c("red1","skyblue"))+ 
-#   geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.15) +
-#   theme(legend.position = "top", legend.text=element_text(size=12)) +
-#   labs(x='Number of context sentences', y='Expectedness mean', 
-#        title='Expectedness mean by context condition and item') +
-#   facet_wrap(~target_no, nrow=2)
-
-#### Plot comparing means for all questions per item ######
 levels(means1$cond_c)
 levels(subjmeans$cond_c)
 
+# plot
 ggplot(means1, aes(x=target_no, y=Mean, color=cond_c, shape=cond_c, fill=cond_c)) +
   geom_point(stroke=.5,size=3,color="black") +
   geom_point(data=subjmeans,aes(fill=cond_c,color=cond_c),shape=21,alpha=.1) +
-  scale_shape_manual(values=c(21, 24),labels=c("0","2"),name="Distance to PQ-raising sentence",guide = guide_legend(reverse = TRUE) ) +
-  scale_fill_manual(values=c("#56B4E9","#E69F00"),labels=c("0","2"),name="Distance to PQ-raising sentence",guide = guide_legend(reverse = TRUE) ) +
+  scale_shape_manual(values=c(21, 24),labels=c("1 sentence","3 sentences"),name="Context condition",guide = guide_legend(reverse = TRUE) ) +
+  scale_fill_manual(values=c("#2596BE","#FF8C19"),labels=c("1 sentence","3 sentences"),name="Context condition",guide = guide_legend(reverse = TRUE) ) +
   geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.15) +
   theme(legend.position = "top", legend.text=element_text(size=12)) +
-  labs(x='Item', y='Mean normalized expectedness of PQ') +
-  #coord_flip() +
-  scale_y_continuous(limits = c(0,75),breaks = c(0,25,50,75), 
-                     labels= c("0","25","50","75")) +
-  scale_color_manual(name="Fact", breaks=c("xx","yy"), labels=c("xx","yy"),  values=c("#56B4E9","#E69F00")) 
-ggsave("exp1.pdf",height=3,width=5)
-
-### End Judith's part ####
-
-#### Interpret expectedness judgment as numbers and context, question and list as a factors #####
-data$expec<-as.numeric(data$expec)
-data$cond_c<-as.factor(data$cond_c)
-data$cond_q<-as.factor(data$cond_q)
-data$list <- as.factor(data$list)
-str(data)
-
-#### normalize data ###############
-zdata1 <- data %>% group_by(id,target_no,cond_c)%>%
-  summarize(id, target_no, cond_c, norm_exp = 100*expec/sum(expec), expec, cond_q, list)
-normalized_data <- zdata1 %>%
-  mutate_at("norm_exp", str_replace, "NaN", "0")
-normalized_data$norm_exp <- as.numeric(normalized_data$norm_exp)
-#str(normalized_data)
+  labs(x='Target question', y='Mean expectedness rating') +
+  coord_flip() +
+  scale_y_continuous(limits = c(0,100),breaks = c(0,25,50,75,100), 
+                     labels= c("0","25","50","75","100")) +
+  scale_color_manual(name="Fact", breaks=c("xx","yy"), labels=c("xx","yy"),  values=c("#2596BE","#FF8C19")) 
+ggsave("exp1-salt.png",height=3,width=6.5) 
 
 
-########################################################
-#          Plots for normalized data
-########################################################
+#### plot mean for all five questions in the two conditions ####
 
-####Calculate means for normalized data
-means1 <- normalized_data %>% 
-  group_by(target_no,cond_c, cond_q) %>% 
-  summarize(Mean=mean(norm_exp),CILow=ci.low(norm_exp),CIHigh=ci.high(norm_exp))%>%
+data = data %>%
+  mutate(cond_c=recode(cond_c, `0` = "1", `2` = "3")) %>%
+  mutate(cond_q=recode(cond_q, irr = "Q-", then = "Q+", pq1 = "Q1", pq2 = "Q2", pq3 = "Q3"))
+
+table(data$cond_q)
+levels(data$cond_c)
+data$cond_c <- relevel(data$cond_c, ref = "3")
+table(data$cond_q)
+
+
+# calculate mean for pq1 by condition
+means1 <- data %>% 
+  group_by(cond_c, cond_q) %>% 
+  summarize(Mean=mean(expec),CILow=ci.low(expec),CIHigh=ci.high(expec)) %>%
   ungroup() %>%
   mutate(YMin=Mean-CILow,YMax=Mean+CIHigh)
 means1
 
-#### Calculate means just for pq1 and pq3 grouped by item ######
-means1_pq1_pq3 <-  normalized_data[(normalized_data$cond_q=="pq1" | normalized_data$cond_q=="pq3"),] %>%
-  group_by(target_no,cond_c, cond_q) %>% 
-  summarize(Mean=mean(norm_exp),CILow=ci.low(norm_exp),CIHigh=ci.high(norm_exp))%>%
-  ungroup() %>%
-  mutate(YMin=Mean-CILow,YMax=Mean+CIHigh)
+# calculate item mean responses
+# itemmeans = data %>%
+#   group_by(target_no,cond_c,cond_q) %>%
+#   summarize(Mean = mean(expec)) %>%
+#   ungroup() %>% 
+#   mutate(cond_c = fct_relevel(as.factor(as.character(cond_c)),"1"))
 
-##### Plot comparing means of pq1 and pq3 per item ######
-ggplot(means1_pq1_pq3, aes(x=cond_c, y=Mean, color=cond_q, shape=cond_q, fill=cond_q)) +
-  geom_point(stroke=.5,size=3,color="black") +
-  scale_shape_manual(values=c(21, 21))+
-  scale_fill_manual(values=c("red1","skyblue"))+ 
-  geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.15) +
-  theme(legend.position = "top", legend.text=element_text(size=12)) +
-  labs(x='Number of context sentences', y='Expectedness mean', 
-       title='Expectedness mean by context condition and item') +
-  facet_wrap(~target_no, nrow=2)
+# make sure that levels are the same
+#levels(means1$cond_c)
+#levels(itemmeans$cond_c)
 
-#### Plot comparing means for all questions per item ######
-ggplot(means1, aes(x=cond_c, y=Mean, color=cond_q, shape=cond_q, fill=cond_q)) +
-  geom_point(stroke=.5,size=3,color="black") +
-  scale_shape_manual(values=c(21, 21, 21, 21, 21))+
-  geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.15) +
-  theme(legend.position = "top", legend.text=element_text(size=12)) +
-  labs(x='Number of context sentences', y='Expectedness mean', title='Expectedness mean of all questions by context condition and item\nfor normalized data with 95% CIs')+
-  facet_wrap(~target_no, nrow=2)
+# color-blind-friendly palette
+cbPalette <- c("#56B4E9","red","#56B4E9","#56B4E9","#56B4E9")
+#"#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7","darkgrey") # c("#999999",
 
-##### Take out all questions except pq1 ##########
-normalized_data_pq1 <- subset(normalized_data, cond_q=="pq1")
-normalized_data_pq1$norm_exp<-as.numeric(normalized_data_pq1$norm_exp)
+# grey color palette
+#cbPalette <- c("grey20","grey10","grey20","grey20","grey20")
 
-##### show the mean and standard deviation for the two conditions for pq1 ##########
-normalized_data_pq1 %>% group_by(cond_c) %>%
-  summarize(M = mean(norm_exp), SD = sd(norm_exp))
+# set alpha
+alpha <- ifelse(means1$cond_q == "Q1", 1, 1)
 
+# set size and font
+size <- ifelse(means1$cond_q == "Q1", 6, 5)
+font <- ifelse(means1$cond_q == "Q1", 2, 1)
 
-##### plot means and and 95% CIs for pq1 ############
-###
-##### Calculate means for PQ1 ######
-mean_norm_pq1 <-  normalized_data[(normalized_data$cond_q=="pq1"),] %>%
-  group_by(cond_c) %>% 
-  summarize(Mean=mean(norm_exp),CILow=ci.low(norm_exp),CIHigh=ci.high(norm_exp))%>%
-  ungroup() %>%
-  mutate(YMin=Mean-CILow,YMax=Mean+CIHigh)
-
-### Plot means for pq1 with 95% CIs####
-ggplot(mean_norm_pq1, aes(x=cond_c, y=Mean)) +
-  geom_point(stroke=.5,size=3,color="black") +
-  scale_shape_manual(values=c(21))+
-  scale_fill_manual(values=c("red1"))+ 
-  geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.15) +
-  theme(legend.position = "top", legend.text=element_text(size=12)) +
-  labs(x='Number of context sentences', y='Expectedness mean', title='Expectedness mean of cleft question by context condition\nwith 95% CIs')
+levels(means1$cond_q)
+# plot
+ggplot(means1, aes(x=cond_c, y=Mean,color=cond_q,fill=cond_q)) +
+  #geom_point(stroke=.5,size=3,color="black") +
+  geom_text(aes(label=cond_q,alpha = alpha,fontface=font),size=size) +
+  theme(legend.position="none") +
+  scale_shape_manual(values=c(21)) +
+  #scale_fill_manual(values=c("#56B4E9","#E69F00"),labels=c("0","2"),name="Distance to PQ-raising sentence",guide = guide_legend(reverse = TRUE) ) +
+  #geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.15) +
+  #theme(legend.position = "top", legend.text=element_text(size=12)) +
+  labs(x='Context condition', y='Mean question expectedness') +
+  scale_y_continuous(limits = c(0,100),breaks = c(0,25,50,75,100), 
+                     labels= c("0","25","50","75","100")) +
+  scale_color_manual(values=cbPalette) +
+  scale_fill_manual(values=cbPalette)
+ggsave("../graphs/main_results_norming.pdf",height=2.5,width=2.5) 
 
