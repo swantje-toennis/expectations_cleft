@@ -1,3 +1,7 @@
+# set working directory to directory of script
+this.dir <- dirname(rstudioapi::getSourceEditorContext()$path)
+setwd(this.dir)
+
 library(readxl)
 library(readr)
 library(ggplot2)
@@ -19,22 +23,23 @@ library(tidyr)
 library(broom)
 library(tidyselect)
 library(tidyverse)
-library(psy811)
-library(mixedup)
 
+
+# For get_pvalues: load remote package from GitHub server
+install.packages("remotes")
+remotes::install_github("dmirman/gazer")
+library(gazer) #get pvalues
 
 ########################################################
-####  ADJUST PATH!!!!   ###############
-setwd("C:/Arbeit/Expectedness/experiments/cleft_exp/main/results/preprocessed_data")
-
 source("C:/Arbeit/R statistics/mer-utils.r")
 source("C:/Arbeit/R statistics/regression-utils.r")
 source("C:/Arbeit/R statistics/diagnostic_fcns.r")
 source("C:/Arbeit/R statistics/boot_glmm.r")
 source("C:/Arbeit/R statistics/helpers.r")
 
-#### read preprocessed data ###########
-data_t <- read.csv("C:/Arbeit/Expectedness/experiments/cleft_exp/main/results/preprocessed_data/data_t.csv", sep = ";")
+#### load data ###########
+data_t <- read.csv("../data/preprocessed_data/data_t.csv", sep = ";")
+nrow(data_t) #372
 
 #### Interpret judgment as numbers and context, tendency, condition A, condition B and list as a factors #####
 data_t$judgment<-as.numeric(data_t$judgment)
@@ -45,86 +50,88 @@ data_t$list <- as.factor(data_t$list)
 data_t$tendency <- as.factor(data_t$tendency)
 str(data_t)
 
-##### show the mean and standard deviation for the two conditions ##########
+##### show the mean and standard deviation for the two expectedness conditions ##########
 data_t %>% group_by(cond_c) %>%
   summarize(M = mean(judgment), SD = sd(judgment))
+#cond_c     M    SD
+# c1      6.63  65.5
+# c3     32.3   55.0
 
 
 #######################
 ####   Models ----
 ######################
 
-#### model 1a -- With varying intercepts and slopes for participant 
-#+ context condition and list as fixed effects interaction
-#item as random effect doesn't make sense because not all items were seen by all subjects
-model1a <- lmer(judgment ~ cond_c * list + (1 + cond_c|id) + (1 + cond_c|target_no), data = data_t)
+# Stepwise comparison of a more specified model to a less specified model
+# Used anova to compare two models
+
+#### model 1 -- With varying intercepts and slopes for participant ('id')
+# and context item ('target_no'),
+# context condition ('cond_c') and list as fixed effects interaction
+model1 <- lmer(judgment ~ cond_c * list + (1 + cond_c|id) + (1 + cond_c|target_no), data = data_t)
 #singular
-ranef(model1a)
 
-lm <- lm(judgment ~ cond_c, data = data_t)
-summary(lm)
-step(lm)
+#### model 2 -- With varying intercepts and slopes for participant ('id')
+# and context item ('target_no'),
+# context condition ('cond_c') and list as fixed effects
+model2 <- lmer(judgment ~ cond_c + list + (1 + cond_c|id) + (1 + cond_c|target_no), data = data_t)
+#singular
 
-lm(formula = judgment ~ cond_c, data = data_t)
+# comparison of model 1 and 2
+anova(model1,model2) # not significant, drop interaction
 
-### Sanity check of model 1a ######
+#### model 3 -- With varying intercepts and slopes for participant ('id')
+# and context item ('target_no'),
+# context condition ('cond_c') as fixed effects (whithout list)
+model3 <- lmer(judgment ~ cond_c + (1 + cond_c|id) + (1 + cond_c|target_no), data = data_t)
+#singular
+
+# comparison of model 2 and 3
+anova(model2,model3) # not significant, drop list as fixed effect
+
+#### model 4 -- With varying intercepts and slopes for participant ('id')
+# and varying intercepts for context item ('target_no'),
+# context condition ('cond_c') as fixed effects (whithout list)
+model4 <- lmer(judgment ~ cond_c + (1 + cond_c|id) + (1|target_no), data = data_t)
+# not singular
+
+# comparison of model 3 and 4
+anova(model3,model4) # not significant, drop item slopes
+
+#### model 5 -- With varying intercepts and slopes for participant ('id'),
+# context condition ('cond_c') as fixed effects (whithout list)
+model5 <- lmer(judgment ~ cond_c + (1 + cond_c|id), data = data_t)
+# not singular
+
+# comparison of model 4 and 5
+anova(model4,model5) # not significant, drop item as random effect
+
+#### model 6 -- With varying intercepts for participant ('id') and
+# context condition ('cond_c') as fixed effects (whithout list)
+model6 <- lmer(judgment ~ cond_c + (1|id), data = data_t)
+# not singular
+
+# comparison of model 5 and 6
+anova(model5,model6) # significant, keep by participant varying slopes 
+
+#### pick model 5!  ##########
+
+summary(model5)
+get_pvalues(model5)
+
+#              Estimate Std..Error  t.value     p.normal p.normal.star
+# (Intercept)  6.629032   5.504970 1.204190 2.285160e-01              
+# cond_cc3    25.688172   5.915915 4.342215 1.410535e-05           ***
+
+### Sanity check for model 5 ######
 #<10 is reasonable collinearity, <30 is moderate collinearity, over 30 is troubling
-kappa.mer(model1a)   ## good!   
+kappa.mer(model5)   ## 2.826852  -> good!   
 #vif over 5 is troubling, over 2.5 is moderate (checks collinearity)
-max(vif.mer(model1a)) ## good (checks collinearity)
+max(vif.mer(model5)) ## 1 -> good! 
 # dispersion parameter should not be much larger than 1
-overdisp.test(model1a) ## not good!
+overdisp.test(model5) ## 2091.563 -> not good!
 # residuals should be normally distributed, qq-plot plot should not show strong deviations from the line, 
 # residuals against fitted values should show a rather random pattern
-diagnostics.plot(model1a) ## good!
+diagnostics.plot(model5) ## ok!
 #lev.thresh should be close to 0, means that there are no influential cases
-lev.thresh(model1a) ## good.
-
-summary(model1a)
-get_pvalues(model1a)
-
-#### model 1b -- With varying intercepts and slopes for participant + list as fixed effect
-model1b <- lmer(judgment ~ cond_c + list + (1 + cond_c|id) + (1 + cond_c|target_no), data = data_t)
-#singular
-ranef(model1b)
-
-anova(model1a,model1b) #If significant, keep interaction of list and context condition
-
-#### model 1c -- With varying intercepts and slopes for participant without list as fixed effect
-model1c <- lmer(judgment ~ cond_c + (1 + cond_c|id) + (1 + cond_c|target_no), data = data_t)
-#singular
-
-#compare model 1b and model 1c (with or without list)
-anova(model1b,model1c) #If significant, keep list as main fixed effect
-
-#### model 2a -- With varying slope for participant, but not item 
-model2a <- lmer(judgment ~ cond_c + (1 + cond_c|id) + (1|target_no), data = data_t)
-summary(model2a) # not singular -> pick this model!
-ranef(model2a)
-
-get_pvalues(model2a)
-
-model2d <- lmer(judgment ~ cond_c + (1|id) + (1|target_no), data = data_t)
-summary(model2d)
-anova(model2a,model2d)
-
-model2e <- lmer(judgment ~ cond_c + (1|id), data = data_t)
-
-
-anova(model2d,model2e)
-
-model3 <- lm(judgment ~ cond_c, data = data_t)
-summary(model3)
-#compare model 2a and model 1c (with or without slope for item)
-anova(model2a,model1c) #If significant, keep item slope as random factor
-
-#### model 2b -- With varying slope for item, but not participant 
-model2b <- lmer(judgment ~ cond_c + (1|id) + (1 + cond_c|target_no), data = data_t)
-
-#compare model 2b and model 1c (with or without slope for participant)
-anova(model2b,model1c) #If significant, keep participant slope as random factor
-
-
-
-
-
+lev.thresh(model5) ## 0.01075269 -> good.

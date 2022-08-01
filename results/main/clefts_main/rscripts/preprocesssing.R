@@ -1,3 +1,7 @@
+# set working directory to directory of script
+this.dir <- dirname(rstudioapi::getSourceEditorContext()$path)
+setwd(this.dir)
+
 library(readxl)
 library(readr)
 library(ggplot2)
@@ -19,91 +23,90 @@ library(tidyr)
 library(tidyverse)
 library(tidyselect)
 
-#---- ADJUST PATH!!!!----------
-########################################################
-setwd("C:/Arbeit/Expectedness/experiments/cleft_exp/main/results/raw_data")
 
-### Dataset #######   ---- ADJUST PATH!!!!----------
-#liste 1
-file1 <- "C:/Arbeit/Expectedness/experiments/cleft_exp/main/results/raw_data/liste 1_results.csv"
+
+### Dataset #######
+#Raw data is saved as a separate file per list of participants
+#Below they are joined:
+#list 1
+file1 <- "../data/raw_data/liste 1_results.csv"
 liste1 <- read.csv(file1, sep = ";")
-#spalten umbenennen
+#rename columns
 names(liste1) <- c("x1","id","x2","x3","x4","x5","x6","cond1","x7","x8","condA","x9","condB","x10","judgment","x12","x13","x14","x15","list" )
 list1 <- c(1)
 liste1$list <- list1
 
-#liste 2
-file2 <- "C:/Arbeit/Expectedness/experiments/cleft_exp/main/results/raw_data/liste 2_results.csv"
+#list 2
+file2 <- "../data/raw_data/liste 2_results.csv"
 liste2 <- read.csv(file2, sep = ";")
-#spalten umbenennen
+#rename columns
 names(liste2) <- c("x1","id","x2","x3","x4","x5","x6","cond1","x7","x8","condA","x9","condB","x10","judgment","x12","x13","x14","x15","list" )
 list2 <- c(2)
 liste2$list <- list2
 
-#liste 3
-file3 <- "C:/Arbeit/Expectedness/experiments/cleft_exp/main/results/raw_data/liste 3_results.csv"
+#list 3
+file3 <- "../data/raw_data/liste 3_results.csv"
 liste3 <- read.csv(file3, sep = ";")
-#spalten umbenennen
+#rename columns
 names(liste3) <- c("x1","id","x2","x3","x4","x5","x6","cond1","x7","x8","condA","x9","condB","x10","judgment","x12","x13","x14","x15","list" )
 list3 <- c(3)
 liste3$list <- list3
 
-#liste 4
-file4 <- "C:/Arbeit/Expectedness/experiments/cleft_exp/main/results/raw_data/liste 4_results.csv"
+#list 4
+file4 <- "../data/raw_data/liste 4_results.csv"
 liste4 <- read.csv(file4, sep = ";")
-#spalten umbenennen
+#rename columns
 names(liste4) <- c("x1","id","x2","x3","x4","x5","x6","cond1","x7","x8","condA","x9","condB","x10","judgment","x12","x13","x14","x15","list" )
 list4 <- c(4)
 liste4$list <- list4
 
-#liste 5
-file5 <- "C:/Arbeit/Expectedness/experiments/cleft_exp/main/results/raw_data/liste 5_results.csv"
+#list 5
+file5 <- "../data/raw_data/liste 5_results.csv"
 liste5 <- read.csv(file5, sep = ";")
-#spalten umbenennen
+#rename columns
 names(liste5) <- c("x1","id","x2","x3","x4","x5","x6","cond1","x7","x8","condA","x9","condB","x10","judgment","x12","x13","x14","x15","list" )
 list5 <- c(5)
 liste5$list <- list5
 
 #liste 6
-file6 <- "C:/Arbeit/Expectedness/experiments/cleft_exp/main/results/raw_data/liste 6_results.csv"
+file6 <- "../data/raw_data/liste 6_results.csv"
 liste6 <- read.csv(file6, sep = ";")
-#spalten umbenennen
+#rename columns
 names(liste6) <- c("x1","id","x2","x3","x4","x5","x6","cond1","x7","x8","condA","x9","condB","x10","judgment","x12","x13","x14","x15","list" )
 list6 <- c(6)
 liste6$list <- list6
 
-#liste 7
-file7 <- "C:/Arbeit/Expectedness/experiments/cleft_exp/main/results/raw_data/liste 7_results.csv"
+#list 7
+file7 <- "../data/raw_data/liste 7_results.csv"
 liste7 <- read.csv(file7, sep = ";")
-#spalten umbenennen
+#rename columns
 names(liste7) <- c("x1","id","x2","x3","x4","x5","x6","cond1","x7","x8","condA","x9","condB","x10","judgment","x12","x13","x14","x15","list" )
 list7 <- c(7)
 liste7$list <- list7
 
-#liste 8
-file8 <- "C:/Arbeit/Expectedness/experiments/cleft_exp/main/results/raw_data/liste 8_results.csv"
+#list 8
+file8 <- "../data/raw_data/liste 8_results.csv"
 liste8 <- read.csv(file8, sep = ";")
-#spalten umbenennen
+#rename columns
 names(liste8) <- c("x1","id","x2","x3","x4","x5","x6","cond1","x7","x8","condA","x9","condB","x10","judgment","x12","x13","x14","x15","list" )
 list8 <- c(8)
 liste8$list <- list8
 
-
-#results_all <- rbind(liste1,liste2)
+#Join all lists in one dataset
 results_all <- rbind(liste1,liste2,liste3,liste4,liste5,liste6,liste7,liste8)
 summary(results_all)
 
-#Personendaten abspeichern
+#save participant data
 personendaten<-results_all[(results_all$cond1=="feedback" | results_all$cond1=="<id:prolificID>"),]
-write.table(personendaten, file="C:/Arbeit/Expectedness/experiments/cleft_exp/main/results/preprocessed_data/personendaten.csv", row.names = FALSE, col.names = TRUE, sep = ";")
+write.table(personendaten, file="../data/preprocessed_data/participant_data.csv", row.names = FALSE, col.names = TRUE, sep = ";")
 
-#unnötige Spalten raus
+#remove columns which are of no use
 results <- subset(results_all, select = c("id","cond1","condA","condB","judgment","list"))
 
-#Unnötige Zeilen von Onexp rauswerfen
+#Remove useless lines created by Onexp software
 res2<-results[!(results$cond1=="feedback" | results$cond1=="submit" | results$cond1=="judgement" | results$cond1=="<id:prolificID>"),]
 
-#unnötige Zeichen raus
+#remove useless symbols created by Onexp software
 res3 <- res2 %>%
   mutate_at("cond1", str_replace, "<id:", "")
 res3 <- res3 %>%
@@ -117,11 +120,11 @@ res3 <- res3 %>%
 res3 <- res3 %>%
   mutate_at("condB", str_replace, ">", "")
 
-#cond1 aufteilen in context condition cond_c und target_no
+#separate cond1 into context condition cond_c und target_no
 res4 <- res3 %>% separate(cond1, c("cond_c", "target_no"), "-")
 
-#Polarity of judgments umdrehen für gezeigte Reihenfolge cleft-canonical 
-#und pro-definite für controls
+#change polarity of judgments when the order displayed in the experiment was 
+#cleft-canonical or pro-definite for controls
 #-> Default order is canonical-cleft and definite-pro. Hence we expect:
 #control 1 and 2 to receive a negative value
 #control 3 and 4 to receive a positive value
@@ -155,8 +158,8 @@ res7 <- res6 %>% mutate(condB = case_when(
 data1 <-res7[!(res7$cond_c=="f" | res7$cond_c=="control" ),]
 fillers <-res7[(res4$cond_c=="f" | res7$cond_c=="control"),]
 fillers$judgment<-as.numeric(fillers$judgment)
-#Fillers abspeichern
-write.table(fillers, file="C:/Arbeit/Expectedness/experiments/cleft_exp/main/results/preprocessed_data/fillers.csv", row.names = FALSE, col.names = TRUE, sep = ";")
+#save fillers
+write.table(fillers, file="../data/preprocessed_data/fillers.csv", row.names = FALSE, col.names = TRUE, sep = ";")
 
 #### To make sure the entries are interpreted as numbers in judgment #####
 data1$judgment<-as.numeric(data1$judgment)
@@ -179,7 +182,7 @@ sd.control3 <- sd(data2$judgment[data2$target_no=="3"])
 mean.control4 <- mean(data2$judgment[data2$target_no=="4"])
 sd.control4 <- sd(data2$judgment[data2$target_no=="4"])
 
-#2. creating the subset of excluded participants: Is this too strict?
+#2. creating the subset of excluded participants
 excludedperson1 <- subset(data2, (target_no == 1 & judgment > (mean.control1+2*sd.control1)))
 excludedperson2 <- subset(data2, (target_no == 2 & judgment > (mean.control2+2*sd.control2)))
 excludedperson3 <- subset(data2, (target_no == 3 & judgment < (mean.control3-2*sd.control3)))
@@ -187,7 +190,7 @@ excludedperson4 <- subset(data2, (target_no == 4 & judgment < (mean.control4-2*s
 excludedperson <- rbind(excludedperson1,excludedperson2,excludedperson3,excludedperson4) 
 excluded_data <- subset(data2, id %in% excludedperson$id)
 #Save the excluded data
-write.table(excluded_data, file="C:/Arbeit/Expectedness/experiments/cleft_exp/main/results/preprocessed_data/excluded_control-data.csv", row.names = FALSE, col.names = TRUE, sep = ";")
+write.table(excluded_data, file="../data/preprocessed_data/excluded_control-data.csv", row.names = FALSE, col.names = TRUE, sep = ";")
 
 `%notin%` <- Negate(`%in%`)
 #3. Exclude participants which are in the set of excluded persons
@@ -217,8 +220,8 @@ data_tendency$judgment<-as.numeric(data_tendency$judgment)
 data_tendency$cond_c<-as.factor(data_tendency$cond_c)
 data_tendency$list <- as.factor(data_tendency$list)
 
-#Save preprocessed data (this will be input for analysis) No participants excluded yet
-write.table(data_tendency, file="C:/Arbeit/Expectedness/experiments/cleft_exp/main/results/preprocessed_data/data_t.csv", row.names = FALSE, col.names = TRUE, sep = ";")
+#Save preprocessed data (this will be input for analysis)
+write.table(data_tendency, file="../data/preprocessed_data/data_t.csv", row.names = FALSE, col.names = TRUE, sep = ";")
 
 
 
