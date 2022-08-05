@@ -6,6 +6,7 @@ source('helpers.R')
 
 # load required packages
 library(tidyverse)
+library(ggrepel)
 
 # set theme for figures
 theme_set(theme_bw())
@@ -153,14 +154,16 @@ size <- ifelse(means1$cond_q == "Q1", 6, 5)
 font <- ifelse(means1$cond_q == "Q1", 2, 1)
 
 levels(means1$cond_q)
+
 # plot
-ggplot(means1, aes(x=cond_c, y=Mean,color=cond_q,fill=cond_q)) +
-  #geom_point(stroke=.5,size=3,color="black") +
-  geom_text(aes(label=cond_q,alpha = alpha,fontface=font),size=size) +
+ggplot(means1, aes(x=cond_c, y=Mean)) +
+  geom_point(stroke=.5,size=1,color="black") +
+  geom_text_repel(aes(label=cond_q), size = 5,segment.size=1,segment.color="black",segment.alpha=.2,nudge_x=.4,nudge_y=-.1,force=1) +
+  #geom_text(aes(label=cond_q,alpha = alpha,fontface=font),size=size) +
   theme(legend.position="none") +
   scale_shape_manual(values=c(21)) +
   #scale_fill_manual(values=c("#56B4E9","#E69F00"),labels=c("0","2"),name="Distance to PQ-raising sentence",guide = guide_legend(reverse = TRUE) ) +
-  #geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.15) +
+  geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.15) +
   #theme(legend.position = "top", legend.text=element_text(size=12)) +
   labs(x='Context condition', y='Mean question expectedness') +
   scale_y_continuous(limits = c(0,100),breaks = c(0,25,50,75,100), 
