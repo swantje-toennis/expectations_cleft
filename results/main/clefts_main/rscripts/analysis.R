@@ -96,6 +96,7 @@ summary(m.3)
 m.4 = lmer(judgment ~ cond_c + (1 + cond_c|id) + (1|target_no), data = data_t, 
            REML=F,control = lmerControl(optimizer ='optimx', optCtrl=list(method='L-BFGS-B')))
 summary(m.4)
+"The by-item slope for the fixed effect was removed because of a correlation of -1."
 
 
 # comparison of model 2 and 3
