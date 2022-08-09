@@ -2,6 +2,11 @@
 this.dir <- dirname(rstudioapi::getSourceEditorContext()$path)
 setwd(this.dir)
 
+library(tidyverse)
+library(lme4)
+library(languageR)
+
+
 library(readxl)
 library(readr)
 library(ggplot2)
@@ -32,11 +37,11 @@ library(gazer) #get pvalues
 
 ########################################################
 
-source("C:/Arbeit/R statistics/mer-utils.r")
-source("C:/Arbeit/R statistics/regression-utils.r")
-source("C:/Arbeit/R statistics/diagnostic_fcns.r")
-source("C:/Arbeit/R statistics/boot_glmm.r")
-source("C:/Arbeit/R statistics/helpers.r")
+#source("C:/Arbeit/R statistics/mer-utils.r")
+#source("C:/Arbeit/R statistics/regression-utils.r")
+#source("C:/Arbeit/R statistics/diagnostic_fcns.r")
+#source("C:/Arbeit/R statistics/boot_glmm.r")
+#source("C:/Arbeit/R statistics/helpers.r")
 
 #### load preprocessed data ###########
 data <- read.csv("../data/preprocessed_data/data.csv", sep = ";")
@@ -69,16 +74,20 @@ data_pq1 %>% group_by(cond_c) %>%
 #### model 1 -- With varying intercepts and slopes for participant and context item
 # and list and context condition as fixed effects interaction
 model1 <- lmer(expec ~ cond_c * list + (1 + cond_c|id) + (1 + cond_c|target_no), data = data_pq1)
+summary(model1)
+# list and interaction not significant
 
 #### model 2 -- With varying intercepts and slopes for participant and item
 # and list and context condition as fixed effects (without interaction)
 model2 <- lmer(expec ~ cond_c + list + (1 + cond_c|id) + (1 + cond_c|target_no), data = data_pq1)
+summary(model2)
 
 anova(model1,model2) ## not significant -> take interaction of list out
 
 #### model 3 -- With varying intercepts and slopes for participant and context item,
 # context condition as fixed effect without list as fixed effect.
 model3 <- lmer(expec ~ cond_c + (1 + cond_c|id) + (1 + cond_c|target_no), data = data_pq1)
+summary(model3)
 
 anova(model2,model3) ## not significant -> list out
 
