@@ -86,6 +86,18 @@ anova(model1,model2) # not significant, drop interaction
 model3 <- lmer(judgment ~ cond_c + (1 + cond_c|id) + (1 + cond_c|target_no), data = data_t)
 #singular
 
+# JT new model
+m.3 = lmer(judgment ~ cond_c + (1 + cond_c|id) + (1 + cond_c|target_no), data = data_t, 
+           REML=F,control = lmerControl(optimizer ='optimx', optCtrl=list(method='L-BFGS-B')))
+summary(m.3)
+# correlation of -1 for by-item slope 
+
+# model reported in paper
+m.4 = lmer(judgment ~ cond_c + (1 + cond_c|id) + (1|target_no), data = data_t, 
+           REML=F,control = lmerControl(optimizer ='optimx', optCtrl=list(method='L-BFGS-B')))
+summary(m.4)
+
+
 # comparison of model 2 and 3
 anova(model2,model3) # not significant, drop list as fixed effect
 
