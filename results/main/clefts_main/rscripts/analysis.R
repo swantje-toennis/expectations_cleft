@@ -1,6 +1,6 @@
-# Script for analysis of cleft experiment in SALT paper
+# Script for analysis of cleft experiment reported in SALT paper
 # "German clefts address unexpected questions"
-# by Swantje Tönnis and Judith Tonhauser
+# by Swantje TÃ¶nnis and Judith Tonhauser
 
 
 #####################################################
