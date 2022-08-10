@@ -1,6 +1,6 @@
 # Script for analysis of cleft experiment reported in SALT paper
 # "German clefts address unexpected questions"
-# by Swantje TÃ¶nnis and Judith Tonhauser
+# by Swantje Tönnis and Judith Tonhauser
 
 
 #####################################################
@@ -85,6 +85,9 @@ model3 <- lmer(judgment ~ cond_c + (1 + cond_c|id) + (1 + cond_c|target_no), dat
 summary(model3)
 # -> correlation of -1 for by-item slope -> remove by-item slope
 
+# comparison of model 2 and 3
+anova(model2,model3) 
+# -> not significant: drop list as fixed effect
 
 # -- model 4 (reported in paper) --
 # context condition ('cond_c') as fixed effect,
