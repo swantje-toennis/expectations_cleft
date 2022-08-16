@@ -6,7 +6,7 @@ unexpected questions in discourse while canonical sentences address relatively e
 
 The results will be published in the SALT32 proceedings. The paper submission can be found in this repository in the folder [writing](https://github.com/swantje-toennis/expectations_cleft/tree/main/writing).
 
-The folder "experiments" contain as all details about the norming study and the cleft experiment, details (including Supplement A and Supplement B) of the final study are [here](https://github.com/swantje-toennis/expectations_cleft/tree/main/experiments/main).
+The folder "experiments" contain as all details about the norming study and the cleft experiment, details of the final study (including Supplement A and Supplement B) are [here](https://github.com/swantje-toennis/expectations_cleft/tree/main/experiments/main).
 
 The results of the two studies (data, figures, and R scripts) can be found [here](https://github.com/swantje-toennis/expectations_cleft/tree/main/results/main). 
 
